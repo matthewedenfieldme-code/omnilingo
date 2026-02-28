@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Omnilingo — Translate Everything</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+--bg: #f0f4fa; --surface: #ffffff; --surface2: #e8eef8; --border: #d0daf0;
+--accent: #3a6fd8; --accent-light: #6a9af0; --accent-pale: #dde8ff;
+--text: #1a2340; --text-soft: #5a6a8a; --text-muted: #8a9abf;
+--shadow: 0 4px 24px rgba(58,111,216,0.08); --shadow-lg: 0 8px 48px rgba(58,111,216,0.14);
+--radius: 16px; --radius-sm: 10px;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+body::before {
+content: ''; position: fixed; inset: 0;
+background: radial-gradient(ellipse 80% 50% at 20% -10%, rgba(106,154,240,0.18) 0%, transparent 60%),
+radial-gradient(ellipse 60% 40% at 80% 110%, rgba(58,111,216,0.12) 0%, transparent 60%);
+pointer-events: none; z-index: 0;
+}
+.container { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 48px 20px 80px; }
+header { text-align: center; margin-bottom: 52px; animation: fadeDown 0.7s ease both; }
+.logo { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 8vw, 4.2rem); font-weight: 300; letter-spacing: -0.02em; color: var(--text); line-height: 1; }
+.logo span { color: var(--accent); font-style: italic; }
+.tagline { margin-top: 10px; font-size: 0.88rem; font-weight: 300; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 36px; box-shadow: var(--shadow-lg); animation: fadeUp 0.7s 0.15s ease both; }
+.field-label { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+.input-wrap { position: relative; margin-bottom: 20px; }
+#wordInput { width: 100%; padding: 16px 52px 16px 18px; font-family: 'DM Sans', sans-serif; font-size: 1.05rem; color: var(--text); background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+#wordInput:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(58,111,216,0.1); }
+#wordInput::placeholder { color: var(--text-muted); }
+.clear-btn { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 4px; border-radius: 50%; display: none; transition: color 0.2s; }
+.clear-btn:hover { color: var(--accent); }
+.lang-row { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 24px; }
+.select-wrap { flex: 1; position: relative; }
+.select-wrap::after { content: '▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; font-size: 0.8rem; }
+select { width: 100%; padding: 14px 36px 14px 16px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--text); background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none; appearance: none; cursor: pointer; transition: border-color 0.2s; }
+select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(58,111,216,0.1); }
+.translate-btn { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.2s, transform 0.1s; box-shadow: 0 4px 16px rgba(58,111,216,0.3); position: relative; overflow: hidden; }
+.translate-btn:hover { background: #2d5ec0; }
+.translate-btn:active { transform: scale(0.99); }
+.translate-btn.loading { pointer-events: none; }
+.btn-text { transition: opacity 0.2s; }
+.btn-spinner { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; }
+.translate-btn.loading .btn-text { opacity: 0; }
+.translate-btn.loading .btn-spinner { display: flex; }
+.spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+#results { margin-top: 28px; display: none; animation: fadeUp 0.4s ease both; }
+.result-main { background: var(--accent-pale); border: 1px solid rgba(58,111,216,0.2); border-radius: var(--radius-sm); padding: 24px 26px; margin-bottom: 12px; }
+.result-label { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.result-translation { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 5vw, 2.4rem); font-weight: 300; color: var(--text); line-height: 1.2; }
+.details-toggle { display: flex; align-items: center; gap: 8px; background: none; border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--text-soft); cursor: pointer; width: 100%; transition: border-color 0.2s, color 0.2s, background 0.2s; margin-bottom: 12px; }
+.details-toggle:hover { border-color: var(--accent-light); color: var(--accent); background: var(--accent-pale); }
+.toggle-icon { margin-left: auto; transition: transform 0.3s; font-size: 0.8rem; }
+.details-toggle.open .toggle-icon { transform: rotate(180deg); }
+.details-panel { display: none; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 12px; }
+.details-panel.open { display: block; animation: fadeUp 0.3s ease both; }
+.detail-section { padding: 20px 22px; border-bottom: 1px solid var(--border); }
+.detail-section:last-child { border-bottom: none; }
+.detail-section-title { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.detail-text { font-size: 0.93rem; color: var(--text-soft); line-height: 1.65; }
+.detail-word { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.error-msg { background: #fff0f0; border: 1px solid #ffc0c0; border-radius: var(--radius-sm); padding: 14px 18px; color: #c03030; font-size: 0.9rem; margin-top: 16px; display: none; }
+footer { text-align: center; margin-top: 48px; font-size: 0.78rem; color: var(--text-muted); animation: fadeUp 0.7s 0.3s ease both; }
+@keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 480px) { .card { padding: 24px 18px; } .lang-row { flex-direction: column; } .container { padding: 32px 14px 60px; } }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<div class="logo">Omni<span>lingo</span></div>
+<p class="tagline">Translate · Define · Discover</p>
+</header>
+<div class="card">
+<div class="input-wrap">
+<p class="field-label">Word or Phrase</p>
+<input type="text" id="wordInput" placeholder="Type a word or phrase…" autocomplete="off" spellcheck="false" />
+<button class="clear-btn" id="clearBtn" title="Clear">✕</button>
+</div>
+<div class="lang-row">
+<div class="select-wrap" style="flex:0 0 140px">
+<p class="field-label">From</p>
+<select id="fromLang"></select>
+</div>
+<div class="select-wrap">
+<p class="field-label">Translate To</p>
+<select id="toLang"></select>
+</div>
+</div>
+<button class="translate-btn" id="translateBtn">
+<span class="btn-text">Translate</span>
+<span class="btn-spinner"><span class="spinner"></span></span>
+</button>
+<div class="error-msg" id="errorMsg"></div>
+<div id="results">
+<div class="result-main">
+<div class="result-label" id="resultLangLabel">Translation</div>
+<div class="result-translation" id="resultText">—</div>
+</div>
+<button class="details-toggle" id="detailsToggle">
+<span>📖 Definitions, Origins &amp; More</span>
+<span class="toggle-icon">▾</span>
+</button>
+<div class="details-panel" id="detailsPanel">
+<div class="detail-section">
+<div class="detail-section-title">Original Word</div>
+<div class="detail-word" id="origWord"></div>
+<div class="detail-text" id="origDefinition"></div>
+</div>
+<div class="detail-section">
+<div class="detail-section-title">Word Origin &amp; Etymology</div>
+<div class="detail-text" id="wordEtymology"></div>
+</div>
+<div class="detail-section">
+<div class="detail-section-title">Translated Word</div>
+<div class="detail-word" id="transWord"></div>
+<div class="detail-text" id="transDefinition"></div>
+</div>
+</div>
+</div>
+</div>
+<footer>Powered by open translation &amp; dictionary APIs · Omnilingo</footer>
+</div>
+<script>
+const LANGUAGES=[["af","Afrikaans"],["sq","Albanian"],["am","Amharic"],["ar","Arabic"],["hy","Armenian"],["az","Azerbaijani"],["eu","Basque"],["be","Belarusian"],["bn","Bengali"],["bs","Bosnian"],["bg","Bulgarian"],["ca","Catalan"],["ceb","Cebuano"],["zh","Chinese (Simplified)"],["zh-TW","Chinese (Traditional)"],["co","Corsican"],["hr","Croatian"],["cs","Czech"],["da","Danish"],["nl","Dutch"],["en","English"],["eo","Esperanto"],["et","Estonian"],["fi","Finnish"],["fr","French"],["fy","Frisian"],["gl","Galician"],["ka","Georgian"],["de","German"],["el","Greek"],["gu","Gujarati"],["ht","Haitian Creole"],["ha","Hausa"],["haw","Hawaiian"],["he","Hebrew"],["hi","Hindi"],["hmn","Hmong"],["hu","Hungarian"],["is","Icelandic"],["ig","Igbo"],["id","Indonesian"],["ga","Irish"],["it","Italian"],["ja","Japanese"],["jv","Javanese"],["kn","Kannada"],["kk","Kazakh"],["km","Khmer"],["rw","Kinyarwanda"],["ko","Korean"],["ku","Kurdish"],["ky","Kyrgyz"],["lo","Lao"],["la","Latin"],["lv","Latvian"],["lt","Lithuanian"],["lb","Luxembourgish"],["mk","Macedonian"],["mg","Malagasy"],["ms","Malay"],["ml","Malayalam"],["mt","Maltese"],["mi","Maori"],["mr","Marathi"],["mn","Mongolian"],["my","Myanmar (Burmese)"],["ne","Nepali"],["no","Norwegian"],["ny","Nyanja"],["or","Odia"],["ps","Pashto"],["fa","Persian"],["pl","Polish"],["pt","Portuguese"],["pa","Punjabi"],["ro","Romanian"],["ru","Russian"],["sm","Samoan"],["gd","Scots Gaelic"],["sr","Serbian"],["st","Sesotho"],["sn","Shona"],["sd","Sindhi"],["si","Sinhala"],["sk","Slovak"],["sl","Slovenian"],["so","Somali"],["es","Spanish"],["su","Sundanese"],["sw","Swahili"],["sv","Swedish"],["tl","Tagalog"],["tg","Tajik"],["ta","Tamil"],["tt","Tatar"],["te","Telugu"],["th","Thai"],["tr","Turkish"],["tk","Turkmen"],["uk","Ukrainian"],["ur","Urdu"],["ug","Uyghur"],["uz","Uzbek"],["vi","Vietnamese"],["cy","Welsh"],["xh","Xhosa"],["yi","Yiddish"],["yo","Yoruba"],["zu","Zulu"]];
+const fromLang=document.getElementById('fromLang'),toLang=document.getElementById('toLang'),wordInput=document.getElementById('wordInput'),clearBtn=document.getElementById('clearBtn'),translateBtn=document.getElementById('translateBtn'),results=document.getElementById('results'),errorMsg=document.getElementById('errorMsg'),detailsToggle=document.getElementById('detailsToggle'),detailsPanel=document.getElementById('detailsPanel');
+LANGUAGES.forEach(([code,name])=>{fromLang.innerHTML+=`<option value="${code}">${name}</option>`;toLang.innerHTML+=`<option value="${code}">${name}</option>`;});
+fromLang.value='en';toLang.value='es';
+wordInput.addEventListener('input',()=>{clearBtn.style.display=wordInput.value?'block':'none';});
+clearBtn.addEventListener('click',()=>{wordInput.value='';clearBtn.style.display='none';results.style.display='none';errorMsg.style.display='none';wordInput.focus();});
+wordInput.addEventListener('keydown',e=>{if(e.key==='Enter')translateBtn.click();});
+translateBtn.addEventListener('click',async()=>{
+const text=wordInput.value.trim();if(!text){wordInput.focus();return;}
+const from=fromLang.value,to=toLang.value,toLangName=LANGUAGES.find(l=>l[0]===to)?.[1]||to;
+errorMsg.style.display='none';results.style.display='none';translateBtn.classList.add('loading');
+try{
+const transRes=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`);
+const transData=await transRes.json();
+if(transData.responseStatus!==200&&transData.responseStatus!=='200')throw new Error('Translation failed. Please try again.');
+const translation=transData.responseData.translatedText;
+document.getElementById('resultLangLabel').textContent=`${toLangName} Translation`;
+document.getElementById('resultText').textContent=translation;
+document.getElementById('origWord').textContent=text;
+document.getElementById('transWord').textContent=translation;
+document.getElementById('origDefinition').textContent='Tap above to load details.';
+document.getElementById('wordEtymology').textContent='Tap above to load details.';
+document.getElementById('transDefinition').textContent='Tap above to load details.';
+results.style.display='block';
+detailsToggle.classList.remove('open');detailsPanel.classList.remove('open');
+let loaded=false;
+detailsToggle.onclick=async()=>{
+detailsToggle.classList.toggle('open');detailsPanel.classList.toggle('open');
+if(!loaded&&detailsPanel.classList.contains('open')){loaded=true;await loadDetails(text,translation,from,to);}
+};
+}catch(err){errorMsg.textContent=err.message||'Something went wrong.';errorMsg.style.display='block';}
+finally{translateBtn.classList.remove('loading');}
+});
+async function loadDetails(original,translated,fromCode,toCode){
+const isEn=fromCode==='en',single=!original.includes(' ');
+document.getElementById('origDefinition').textContent='Loading…';
+document.getElementById('wordEtymology').textContent='Loading…';
+document.getElementById('transDefinition').textContent='Loading…';
+if(isEn&&single){
+try{
+const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(original.toLowerCase())}`);
+const data=await res.json();
+if(Array.isArray(data)&&data[0]){
+const meanings=data[0].meanings||[];let defText='';
+meanings.slice(0,2).forEach(m=>{const d=m.definitions?.[0]?.definition;if(d)defText+=`(${m.partOfSpeech}) ${d}\n`;});
+document.getElementById('origDefinition').textContent=defText.trim()||'No definition found.';
+document.getElementById('wordEtymology').textContent=data[0].origin||'Etymology not available.';
+}else{document.getElementById('origDefinition').textContent='No definition found.';document.getElementById('wordEtymology').textContent='Etymology not available.';}
+}catch{document.getElementById('origDefinition').textContent='Could not load.';document.getElementById('wordEtymology').textContent='Could not load.';}
+}else{
+document.getElementById('origDefinition').textContent=isEn?'Available for single words only.':'Available when translating from English.';
+document.getElementById('wordEtymology').textContent='Available for single English words.';
+}
+if(toCode==='en'&&!translated.includes(' ')){
+try{
+const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(translated.toLowerCase())}`);
+const data=await res.json();
+if(Array.isArray(data)&&data[0]){
+const meanings=data[0].meanings||[];let defText='';
+meanings.slice(0,2).forEach(m=>{const d=m.definitions?.[0]?.definition;if(d)defText+=`(${m.partOfSpeech}) ${d}\n`;});
+document.getElementById('transDefinition').textContent=defText.trim()||'No definition found.';
+}else{document.getElementById('transDefinition').textContent='No definition found.';}
+}catch{document.getElementById('transDefinition').textContent='Could not load.';}
+}else{document.getElementById('transDefinition').textContent=toCode!=='en'?'Available when target language is English.':'Available for single words only.';}
+}
+</script>
+</body>
+</html>
+
