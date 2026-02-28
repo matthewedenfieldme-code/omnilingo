@@ -11,7 +11,7 @@
       --bg: #f0f4fa; --surface: #ffffff; --surface2: #e8eef8; --border: #d0daf0;
       --accent: #3a6fd8; --accent-light: #6a9af0; --accent-pale: #dde8ff;
       --text: #1a2340; --text-soft: #5a6a8a; --text-muted: #8a9abf;
-      --shadow: 0 4px 24px rgba(58,111,216,0.08); --shadow-lg: 0 8px 48px rgba(58,111,216,0.14);
+      --shadow-lg: 0 8px 48px rgba(58,111,216,0.14);
       --radius: 16px; --radius-sm: 10px;
     }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
@@ -145,32 +145,39 @@
 <script>
 const LANGUAGES=[["af","Afrikaans"],["sq","Albanian"],["am","Amharic"],["ar","Arabic"],["hy","Armenian"],["az","Azerbaijani"],["eu","Basque"],["be","Belarusian"],["bn","Bengali"],["bs","Bosnian"],["bg","Bulgarian"],["ca","Catalan"],["ceb","Cebuano"],["zh","Chinese (Simplified)"],["zh-TW","Chinese (Traditional)"],["co","Corsican"],["hr","Croatian"],["cs","Czech"],["da","Danish"],["nl","Dutch"],["en","English"],["eo","Esperanto"],["et","Estonian"],["fi","Finnish"],["fr","French"],["fy","Frisian"],["gl","Galician"],["ka","Georgian"],["de","German"],["el","Greek"],["gu","Gujarati"],["ht","Haitian Creole"],["ha","Hausa"],["haw","Hawaiian"],["he","Hebrew"],["hi","Hindi"],["hmn","Hmong"],["hu","Hungarian"],["is","Icelandic"],["ig","Igbo"],["id","Indonesian"],["ga","Irish"],["it","Italian"],["ja","Japanese"],["jv","Javanese"],["kn","Kannada"],["kk","Kazakh"],["km","Khmer"],["rw","Kinyarwanda"],["ko","Korean"],["ku","Kurdish"],["ky","Kyrgyz"],["lo","Lao"],["la","Latin"],["lv","Latvian"],["lt","Lithuanian"],["lb","Luxembourgish"],["mk","Macedonian"],["mg","Malagasy"],["ms","Malay"],["ml","Malayalam"],["mt","Maltese"],["mi","Maori"],["mr","Marathi"],["mn","Mongolian"],["my","Myanmar (Burmese)"],["ne","Nepali"],["no","Norwegian"],["ny","Nyanja"],["or","Odia"],["ps","Pashto"],["fa","Persian"],["pl","Polish"],["pt","Portuguese"],["pa","Punjabi"],["ro","Romanian"],["ru","Russian"],["sm","Samoan"],["gd","Scots Gaelic"],["sr","Serbian"],["st","Sesotho"],["sn","Shona"],["sd","Sindhi"],["si","Sinhala"],["sk","Slovak"],["sl","Slovenian"],["so","Somali"],["es","Spanish"],["su","Sundanese"],["sw","Swahili"],["sv","Swedish"],["tl","Tagalog"],["tg","Tajik"],["ta","Tamil"],["tt","Tatar"],["te","Telugu"],["th","Thai"],["tr","Turkish"],["tk","Turkmen"],["uk","Ukrainian"],["ur","Urdu"],["ug","Uyghur"],["uz","Uzbek"],["vi","Vietnamese"],["cy","Welsh"],["xh","Xhosa"],["yi","Yiddish"],["yo","Yoruba"],["zu","Zulu"]];
 
+// Wiktionary language codes (maps our lang codes to Wiktionary subdomain codes)
+const WIKT_LANG={
+  "af":"af","sq":"sq","ar":"ar","hy":"hy","az":"az","eu":"eu","bn":"bn","bs":"bs",
+  "bg":"bg","ca":"ca","zh":"zh","hr":"hr","cs":"cs","da":"da","nl":"nl","en":"en",
+  "et":"et","fi":"fi","fr":"fr","gl":"gl","ka":"ka","de":"de","el":"el","he":"he",
+  "hi":"hi","hu":"hu","is":"is","id":"id","ga":"ga","it":"it","ja":"ja","kn":"kn",
+  "ko":"ko","lv":"lv","lt":"lt","mk":"mk","ms":"ms","ml":"ml","mr":"mr","ne":"ne",
+  "no":"no","fa":"fa","pl":"pl","pt":"pt","ro":"ro","ru":"ru","sr":"sr","sk":"sk",
+  "sl":"sl","es":"es","sw":"sw","sv":"sv","ta":"ta","te":"te","th":"th","tr":"tr",
+  "uk":"uk","ur":"ur","uz":"uz","vi":"vi","cy":"cy","yo":"yo","zu":"zu","la":"la",
+  "eo":"eo","haw":"haw","mi":"mi","sw":"sw","tl":"tl"
+};
+
+// Wiktionary language name map (how Wiktionary labels the language in entries)
+const WIKT_LANG_NAME={
+  "af":"Afrikaans","sq":"Albanian","ar":"Arabic","hy":"Armenian","az":"Azerbaijani",
+  "eu":"Basque","bn":"Bengali","bs":"Bosnian","bg":"Bulgarian","ca":"Catalan",
+  "zh":"Chinese","hr":"Croatian","cs":"Czech","da":"Danish","nl":"Dutch","en":"English",
+  "et":"Estonian","fi":"Finnish","fr":"French","gl":"Galician","ka":"Georgian",
+  "de":"German","el":"Greek","he":"Hebrew","hi":"Hindi","hu":"Hungarian","is":"Icelandic",
+  "id":"Indonesian","ga":"Irish","it":"Italian","ja":"Japanese","kn":"Kannada",
+  "ko":"Korean","lv":"Latvian","lt":"Lithuanian","mk":"Macedonian","ms":"Malay",
+  "ml":"Malayalam","mr":"Marathi","ne":"Nepali","no":"Norwegian","fa":"Persian",
+  "pl":"Polish","pt":"Portuguese","ro":"Romanian","ru":"Russian","sr":"Serbian",
+  "sk":"Slovak","sl":"Slovenian","es":"Spanish","sw":"Swahili","sv":"Swedish",
+  "ta":"Tamil","te":"Telugu","th":"Thai","tr":"Turkish","uk":"Ukrainian","ur":"Urdu",
+  "uz":"Uzbek","vi":"Vietnamese","cy":"Welsh","yo":"Yoruba","zu":"Zulu","la":"Latin",
+  "eo":"Esperanto","haw":"Hawaiian","mi":"Maori","tl":"Tagalog"
+};
+
 const SPEECH_LANG_MAP={"af":"af-ZA","sq":"sq-AL","ar":"ar-SA","hy":"hy-AM","az":"az-AZ","eu":"eu-ES","bn":"bn-BD","bs":"bs-BA","bg":"bg-BG","ca":"ca-ES","zh":"zh-CN","zh-TW":"zh-TW","hr":"hr-HR","cs":"cs-CZ","da":"da-DK","nl":"nl-NL","en":"en-US","et":"et-EE","fi":"fi-FI","fr":"fr-FR","gl":"gl-ES","ka":"ka-GE","de":"de-DE","el":"el-GR","gu":"gu-IN","he":"he-IL","hi":"hi-IN","hu":"hu-HU","is":"is-IS","id":"id-ID","ga":"ga-IE","it":"it-IT","ja":"ja-JP","kn":"kn-IN","kk":"kk-KZ","km":"km-KH","ko":"ko-KR","ky":"ky-KG","lo":"lo-LA","lv":"lv-LV","lt":"lt-LT","mk":"mk-MK","ms":"ms-MY","ml":"ml-IN","mt":"mt-MT","mr":"mr-IN","mn":"mn-MN","my":"my-MM","ne":"ne-NP","no":"no-NO","fa":"fa-IR","pl":"pl-PL","pt":"pt-BR","pa":"pa-IN","ro":"ro-RO","ru":"ru-RU","sr":"sr-RS","si":"si-LK","sk":"sk-SK","sl":"sl-SI","es":"es-ES","sw":"sw-KE","sv":"sv-SE","tl":"fil-PH","ta":"ta-IN","te":"te-IN","th":"th-TH","tr":"tr-TR","uk":"uk-UA","ur":"ur-PK","uz":"uz-UZ","vi":"vi-VN","cy":"cy-GB","yo":"yo-NG","zu":"zu-ZA"};
 
-const PHONETIC_GUIDES={
-  "es":"Pronunciation tip: Vowels are always pure — A='ah', E='eh', I='ee', O='oh', U='oo'. J sounds like 'h'. LL sounds like 'y'.",
-  "fr":"Pronunciation tip: Final consonants are often silent. OU='oo', EU='uh'. H is silent. EN/AN/IN are nasal sounds.",
-  "de":"Pronunciation tip: W sounds like 'v'. V sounds like 'f'. Z sounds like 'ts'. IE='ee', EI='eye', EU='oy'. CH is guttural.",
-  "it":"Pronunciation tip: Vowels are pure like Spanish. C before E/I sounds like 'ch'. G before E/I sounds like 'j'. GN='ny'.",
-  "pt":"Pronunciation tip: LH='ly', NH='ny'. ÃO sounds like 'owng'. Some vowels are nasal. S between vowels sounds like 'z'.",
-  "ru":"Pronunciation tip: Stress changes vowel sounds. Unstressed O sounds like 'uh'. Soft consonants are followed by a 'y' glide.",
-  "ar":"Pronunciation tip: Guttural sounds from the throat. Long vowels are held twice as long. Emphatic consonants change nearby vowels.",
-  "ja":"Pronunciation tip: Each syllable has equal length. Vowels are pure. R is between English R and L. U is often barely voiced.",
-  "zh":"Pronunciation tip: Tones change meaning (4 tones). X='sh', Q='ch', ZH='j'. Pinyin shown is a romanization guide.",
-  "ko":"Pronunciation tip: Vowels are pure. Double consonants are tense/strong. G/D/B soften between vowels.",
-  "hi":"Pronunciation tip: Aspirated consonants (KH, GH, etc.) have a puff of air. Retroflex consonants are pronounced with tongue curled back.",
-  "tr":"Pronunciation tip: Very phonetic — pronounced as written. Ş='sh', Ç='ch', Ğ silently lengthens the previous vowel.",
-  "pl":"Pronunciation tip: Ł sounds like 'w'. Sz='sh', Cz='ch', Ź/Ż='zh'. Ą and Ę are nasal vowels.",
-  "nl":"Pronunciation tip: G is guttural like Scottish 'loch'. IJ sounds like 'eye'. OE='oo', UI is a unique Dutch sound.",
-  "sv":"Pronunciation tip: Sj/Sk before E/I/Y/Ä/Ö sounds like 'sh'. Long vowels are held longer. Tone distinguishes some words.",
-  "el":"Pronunciation tip: Letters always have the same sound. Y/H both sound like 'ee'. AU='av'/'af'. EU='ev'/'ef'.",
-  "he":"Pronunciation tip: Read right to left. R is guttural. CH is like Scottish 'loch'. Most vowels are not written.",
-  "uk":"Pronunciation tip: И sounds like a short 'i'. І sounds like 'ee'. Г is softer than Russian. ' (apostrophe) marks a hard break.",
-  "vi":"Pronunciation tip: Six tones change meaning. D in north sounds like 'z'. Đ sounds like 'd'. NH='ny', KH='kh'.",
-  "th":"Pronunciation tip: Five tones change meaning. Aspirated and unaspirated consonants are distinct. Final consonants are unreleased.",
-  "id":"Pronunciation tip: Very phonetic. C sounds like 'ch'. Stress usually on second-to-last syllable. No tones.",
-  "ms":"Pronunciation tip: Similar to Indonesian. C='ch'. Fairly phonetic. Stress on second-to-last syllable.",
-};
+const PHONETIC_GUIDES={"es":"Pronunciation tip: Vowels are always pure — A='ah', E='eh', I='ee', O='oh', U='oo'. J sounds like 'h'. LL sounds like 'y'.","fr":"Pronunciation tip: Final consonants are often silent. OU='oo', EU='uh'. H is silent. EN/AN/IN are nasal sounds.","de":"Pronunciation tip: W sounds like 'v'. V sounds like 'f'. Z sounds like 'ts'. IE='ee', EI='eye', EU='oy'. CH is guttural.","it":"Pronunciation tip: Vowels are pure like Spanish. C before E/I sounds like 'ch'. G before E/I sounds like 'j'. GN='ny'.","pt":"Pronunciation tip: LH='ly', NH='ny'. ÃO sounds like 'owng'. Some vowels are nasal. S between vowels sounds like 'z'.","ru":"Pronunciation tip: Stress changes vowel sounds. Unstressed O sounds like 'uh'. Soft consonants are followed by a 'y' glide.","ar":"Pronunciation tip: Guttural sounds from the throat. Long vowels are held twice as long. Emphatic consonants change nearby vowels.","ja":"Pronunciation tip: Each syllable has equal length. Vowels are pure. R is between English R and L. U is often barely voiced.","zh":"Pronunciation tip: Tones change meaning (4 tones). X='sh', Q='ch', ZH='j'. Pinyin shown is a romanization guide.","ko":"Pronunciation tip: Vowels are pure. Double consonants are tense/strong. G/D/B soften between vowels.","hi":"Pronunciation tip: Aspirated consonants (KH, GH) have a puff of air. Retroflex consonants use tongue curled back.","tr":"Pronunciation tip: Very phonetic — pronounced as written. Ş='sh', Ç='ch', Ğ silently lengthens the previous vowel.","pl":"Pronunciation tip: Ł sounds like 'w'. Sz='sh', Cz='ch', Ź/Ż='zh'. Ą and Ę are nasal vowels.","nl":"Pronunciation tip: G is guttural like Scottish 'loch'. IJ sounds like 'eye'. OE='oo', UI is a unique Dutch sound.","sv":"Pronunciation tip: Sj/Sk before E/I/Y sounds like 'sh'. Long vowels are held longer. Tone distinguishes some words.","el":"Pronunciation tip: Letters always have the same sound. Y/H both sound like 'ee'. AU='av'/'af'. EU='ev'/'ef'.","he":"Pronunciation tip: Read right to left. R is guttural. CH is like Scottish 'loch'. Most vowels are not written.","uk":"Pronunciation tip: И sounds like a short 'i'. І sounds like 'ee'. Г is softer than Russian.","vi":"Pronunciation tip: Six tones change meaning. D in north sounds like 'z'. Đ sounds like 'd'. NH='ny', KH='kh'.","th":"Pronunciation tip: Five tones change meaning. Aspirated and unaspirated consonants are distinct.","id":"Pronunciation tip: Very phonetic. C sounds like 'ch'. Stress usually on second-to-last syllable. No tones.","ms":"Pronunciation tip: Similar to Indonesian. C='ch'. Fairly phonetic. Stress on second-to-last syllable."};
 
 const fromLang=document.getElementById('fromLang'),toLang=document.getElementById('toLang'),
   wordInput=document.getElementById('wordInput'),clearBtn=document.getElementById('clearBtn'),
@@ -220,8 +227,7 @@ translateBtn.addEventListener('click',async()=>{
     if(transData.responseStatus!==200&&transData.responseStatus!=='200') throw new Error('Translation failed. Please try again.');
 
     const translation=transData.responseData.translatedText;
-    currentTranslation=translation;
-    currentToLang=to;
+    currentTranslation=translation; currentToLang=to;
 
     document.getElementById('resultLangLabel').textContent=`${toLangName} Translation`;
     document.getElementById('resultText').textContent=translation;
@@ -231,18 +237,11 @@ translateBtn.addEventListener('click',async()=>{
     document.getElementById('wordEtymology').textContent='Tap above to load.';
     document.getElementById('transDefinition').textContent='Tap above to load.';
 
-    // Phonetic guide
     const guide=PHONETIC_GUIDES[to];
-    if(guide){
-      resultPhonetic.textContent='💡 '+guide;
-      resultPhonetic.style.display='block';
-    } else {
-      resultPhonetic.style.display='none';
-    }
+    if(guide){ resultPhonetic.textContent='💡 '+guide; resultPhonetic.style.display='block'; }
+    else { resultPhonetic.style.display='none'; }
 
-    // Audio button
     speakBtn.style.display=('speechSynthesis' in window)?'flex':'none';
-
     results.style.display='block';
     detailsToggle.classList.remove('open'); detailsPanel.classList.remove('open');
 
@@ -259,14 +258,55 @@ translateBtn.addEventListener('click',async()=>{
   }
 });
 
-async function loadDetails(original,translated,fromCode,toCode){
-  const isEn=fromCode==='en', single=!original.includes(' ');
+// Fetch definition from Wiktionary API
+async function getWiktionaryDef(word, langCode) {
+  const isSingleWord = !word.includes(' ');
+  if(!isSingleWord) return null;
+
+  try {
+    // Use English Wiktionary which has entries for words in all languages
+    const res = await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(word.toLowerCase())}`);
+    if(!res.ok) return null;
+    const data = await res.json();
+
+    // Try to find the section matching our target language
+    const langName = WIKT_LANG_NAME[langCode] || null;
+    let entries = null;
+
+    if(langName && data[langName]) {
+      entries = data[langName];
+    } else if(data['English'] && langCode === 'en') {
+      entries = data['English'];
+    } else {
+      // Try first available language in response
+      const keys = Object.keys(data);
+      if(keys.length > 0) entries = data[keys[0]];
+    }
+
+    if(!entries || !entries.length) return null;
+
+    // Build definition text
+    let defText = '';
+    entries.slice(0, 3).forEach(entry => {
+      if(entry.partOfSpeech && entry.definitions && entry.definitions[0]) {
+        const def = entry.definitions[0].definition.replace(/<[^>]+>/g,''); // strip HTML
+        defText += `(${entry.partOfSpeech}) ${def}\n`;
+      }
+    });
+    return defText.trim() || null;
+  } catch { return null; }
+}
+
+async function loadDetails(original, translated, fromCode, toCode) {
+  const isEn = fromCode==='en', singleOrig = !original.includes(' '), singleTrans = !translated.includes(' ');
+
   document.getElementById('origDefinition').textContent='Loading…';
   document.getElementById('wordEtymology').textContent='Loading…';
   document.getElementById('transDefinition').textContent='Loading…';
 
-  if(isEn&&single){
-    try{
+  // Original word definition (English dictionary API for English, Wiktionary for others)
+  if(isEn && singleOrig) {
+    try {
       const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(original.toLowerCase())}`);
       const data=await res.json();
       if(Array.isArray(data)&&data[0]){
@@ -282,23 +322,38 @@ async function loadDetails(original,translated,fromCode,toCode){
       document.getElementById('origDefinition').textContent='Could not load definition.';
       document.getElementById('wordEtymology').textContent='Could not load etymology.';
     }
+  } else if(singleOrig) {
+    // Try Wiktionary for non-English source words
+    const def = await getWiktionaryDef(original, fromCode);
+    document.getElementById('origDefinition').textContent = def || 'No definition found for this word.';
+    document.getElementById('wordEtymology').textContent = 'Etymology available for English words only.';
   } else {
-    document.getElementById('origDefinition').textContent=isEn?'Available for single words only.':'Available when translating from English.';
-    document.getElementById('wordEtymology').textContent='Available for single English words.';
+    document.getElementById('origDefinition').textContent='Definitions available for single words only.';
+    document.getElementById('wordEtymology').textContent='Etymology available for single English words.';
   }
 
-  if(toCode==='en'&&!translated.includes(' ')){
-    try{
-      const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(translated.toLowerCase())}`);
-      const data=await res.json();
-      if(Array.isArray(data)&&data[0]){
-        const meanings=data[0].meanings||[]; let defText='';
-        meanings.slice(0,2).forEach(m=>{ const d=m.definitions?.[0]?.definition; if(d) defText+=`(${m.partOfSpeech}) ${d}\n`; });
-        document.getElementById('transDefinition').textContent=defText.trim()||'No definition found.';
-      } else { document.getElementById('transDefinition').textContent='No definition found.'; }
-    } catch { document.getElementById('transDefinition').textContent='Could not load.'; }
+  // Translated word definition via Wiktionary
+  if(singleTrans) {
+    // First try English Wiktionary looking for the target language section
+    const def = await getWiktionaryDef(translated, toCode);
+    if(def) {
+      document.getElementById('transDefinition').textContent = def;
+    } else if(toCode === 'en') {
+      // Fallback to dictionary API for English targets
+      try {
+        const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(translated.toLowerCase())}`);
+        const data=await res.json();
+        if(Array.isArray(data)&&data[0]){
+          const meanings=data[0].meanings||[]; let defText='';
+          meanings.slice(0,2).forEach(m=>{ const d=m.definitions?.[0]?.definition; if(d) defText+=`(${m.partOfSpeech}) ${d}\n`; });
+          document.getElementById('transDefinition').textContent=defText.trim()||'No definition found.';
+        } else { document.getElementById('transDefinition').textContent='No definition found.'; }
+      } catch { document.getElementById('transDefinition').textContent='Could not load definition.'; }
+    } else {
+      document.getElementById('transDefinition').textContent='No definition found for this word. Coverage varies by language.';
+    }
   } else {
-    document.getElementById('transDefinition').textContent=toCode!=='en'?'Available when target language is English.':'Available for single words only.';
+    document.getElementById('transDefinition').textContent='Definitions available for single words only.';
   }
 }
 </script>
